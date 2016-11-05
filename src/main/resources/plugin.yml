@@ -1,0 +1,11 @@
+name: VaultTest
+version: ${project.version}
+description: A plugin for testing Vault
+author: Luck
+website: https://github.com/lucko/VaultTest
+depend: [Vault]
+main: me.lucko.vaulttest.VaultTestPlugin
+
+commands:
+  vaulttest:
+    description: Command to test Vault output
