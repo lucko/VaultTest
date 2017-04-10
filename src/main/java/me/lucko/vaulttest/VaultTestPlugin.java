@@ -30,6 +30,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +51,7 @@ public class VaultTestPlugin extends JavaPlugin {
 
         List<String> arguments = new ArrayList<>(Arrays.asList(args));
         if (arguments.size() < 2) {
-            msg(sender, "&cUsage: /vaulttest <chat|permission> <method> [parameters...]");
+            sendUsage(sender);
             return true;
         }
 
@@ -61,7 +62,7 @@ public class VaultTestPlugin extends JavaPlugin {
         } else if (type.startsWith("p")) {
             clazz = Permission.class;
         } else {
-            msg(sender, "&cUsage: /vaulttest <chat|permission> <method> [parameters...]");
+            sendUsage(sender);
             return true;
         }
 
@@ -81,6 +82,13 @@ public class VaultTestPlugin extends JavaPlugin {
         }
 
         return true;
+    }
+
+    private void sendUsage(CommandSender sender) {
+        msg(sender, "&cUsage: /vaulttest <chat|permission> <method> [parameters...]");
+        msg(sender, "&ePlayer &c--> &ep=?");
+        msg(sender, "&eWorld &c--> &ew=?");
+        msg(sender, "&eOfflinePlayer &c--> &eop=?");
     }
 
     private Object handleMethodCall(Class clazz, List<String> args) {
@@ -143,8 +151,21 @@ public class VaultTestPlugin extends JavaPlugin {
             }
         }
 
-        throw new RuntimeException("Couldn't find method with name \"" + methodName + "\". " +
-                "&fAvailable: &7" + methods.stream().map(Method::getName).collect(Collectors.joining(", ")));
+        List<String> availableMethods = new ArrayList<>();
+        availableMethods.add("&eAvailable:");
+
+        for (Method m : methods) {
+            StringBuilder sb = new StringBuilder("&7").append(m.getReturnType().getSimpleName()).append(" &f").append(m.getName());
+
+            Parameter[] paras = m.getParameters();
+            for (Parameter p : paras) {
+                sb.append(" &7").append(p.getType().getSimpleName());
+            }
+            availableMethods.add(sb.toString());
+        }
+
+        String usage = availableMethods.stream().collect(Collectors.joining("\n"));
+        throw new RuntimeException("Couldn't find method with name \"" + methodName + "\". \n" + usage);
     }
 
     private static void msg(CommandSender sender, String msg) {
